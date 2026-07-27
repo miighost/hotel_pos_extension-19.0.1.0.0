@@ -52,7 +52,7 @@ patch(ProductScreen.prototype, {
 
         for (const b of bookings) {
             const roomNames = roomLineMap[b.id] ? roomLineMap[b.id].join(", ") : "";
-            b.display_name = roomNames ? `${roomNames} (${b.name})` : b.name;
+            b.display_name = roomNames || b.name;
             b.room_numbers = roomNames || b.name;
         }
 
