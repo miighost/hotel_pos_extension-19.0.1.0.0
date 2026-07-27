@@ -14,15 +14,12 @@
                 </select>
             </div>
             <div class="row mt-2">
-                <span class="label">Board Type</span>
                 <input type="text" class="form-control" t-att-value="state.selectedBooking ? (state.selectedBooking.board_type_display || '') : ''" readonly="1"/>
             </div>
             <div class="row mt-2">
-                <span class="label">Booking No</span>
                 <input type="text" class="form-control" t-att-value="state.selectedBooking ? state.selectedBooking.name : ''" readonly="1"/>
             </div>
             <div class="row mt-2">
-                <span class="label">Booking Customer</span>
                 <input type="text" class="form-control" t-att-value="state.selectedBooking ? (state.selectedBooking.partner_id ? state.selectedBooking.partner_id[1] : '') : ''" readonly="1"/>
             </div>
             <t t-set-slot="footer">
