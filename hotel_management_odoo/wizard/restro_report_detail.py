@@ -22,7 +22,7 @@
 import io
 import json
 from datetime import datetime, timedelta
-from odoo import fields, models
+from odoo import _, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools import json_default
 
@@ -75,7 +75,7 @@ class RestroReportWizard(models.TransientModel):
         if self.checkin and self.checkout:
             if self.checkin > self.checkout:
                 raise ValidationError(
-                    ("Check-in date should be less than Check-out date")
+                    _("Check-in date should be less than Check-out date")
                 )
         if self.checkin:
             domain.append(
