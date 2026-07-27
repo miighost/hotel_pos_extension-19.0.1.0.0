@@ -33,10 +33,10 @@ except ImportError:
 
 
 class RestroReportWizard(models.TransientModel):
-    """Pdf and Excel Report for Restaurant / Restro Orders"""
+    """Pdf and Excel Report for In-House Guest Restaurant / Restro Orders"""
 
     _name = "restro.report.detail"
-    _description = "Restro Report Details"
+    _description = "In-House Restro Report Details"
 
     checkin = fields.Date(help="Choose the Checkin Date", string="Checkin")
     checkout = fields.Date(help="Choose the Checkout Date", string="Checkout")
@@ -69,27 +69,26 @@ class RestroReportWizard(models.TransientModel):
         }
 
     def generate_data(self):
-        """Generate data to be printed in the report"""
-        domain = []
-        restro_list = []
+        """Generate in-house room booking data for Restro Report"""
+        domain = [("state", "=", "check_in")]
         if self.checkin and self.checkout:
             if self.checkin > self.checkout:
                 raise ValidationError(
                     _("Check-in date should be less than Check-out date")
                 )
         if self.checkin:
-            domain.append(
-                ("booking_id.checkin_date", ">=", self.checkin),
-            )
+            domain.append(("checkin_date", ">=", self.checkin))
         if self.checkout:
-            domain.append(
-                ("booking_id.checkout_date", "<", self.checkout + timedelta(days=1)),
-            )
+            domain.append(("checkout_date", "<", self.checkout + timedelta(days=1)))
         if self.room_id:
-            domain.append(
-                ("booking_id.room_line_ids.room_id", "=", self.room_id.id),
-            )
+            domain.append(("room_line_ids.room_id", "=", self.room_id.id))
 
+        board_labels = {
+            'ro': 'Room Only (RO)',
+            'bb': 'Bed & Breakfast (BB)',
+            'hb': 'Half Board (HB)',
+            'fb': 'Full Board (FB)',
+        }
         state_labels = {
             'draft': 'Draft',
             'reserved': 'Reserved',
@@ -98,16 +97,18 @@ class RestroReportWizard(models.TransientModel):
             'cancel': 'Cancelled',
             'done': 'Done',
         }
-        food_booking_lines = self.env["food.booking.line"].search(domain)
-        for line in food_booking_lines:
-            booking = line.booking_id
-            room_names = ", ".join(booking.room_line_ids.mapped("room_id.name")) if booking and booking.room_line_ids else ""
-            guest_name = booking.partner_id.name if booking and booking.partner_id else (line.food_id.name if line.food_id else "")
-            raw_state = booking.state if booking else ""
+        restro_list = []
+        inhouse_bookings = self.env["room.booking"].search(domain)
+        for booking in inhouse_bookings:
+            room_names = ", ".join(booking.room_line_ids.mapped("room_id.name")) if booking.room_line_ids else ""
+            guest_name = booking.partner_id.name if booking.partner_id else ""
+            raw_board = booking.board_type if hasattr(booking, 'board_type') else 'ro'
+            board_type_val = board_labels.get(raw_board, raw_board or "Room Only (RO)")
             restro_list.append({
-                "name": guest_name,
-                "room": room_names,
-                "state": state_labels.get(raw_state, raw_state),
+                "guest_name": guest_name,
+                "room": room_names or booking.name,
+                "board_type": board_type_val,
+                "state": state_labels.get(booking.state, booking.state or "Check In"),
             })
         return restro_list
 
@@ -137,22 +138,24 @@ class RestroReportWizard(models.TransientModel):
         )
         body = workbook.add_format(
             {"align": "left", "text_wrap": True, "border": True})
-        sheet.merge_range("A1:D1", "Restro Report", head)
-        sheet.set_column("A2:D2", 20)
+        sheet.merge_range("A1:E1", "In-House Guest Restro Report", head)
+        sheet.set_column("A2:E2", 22)
         sheet.set_row(0, 30)
         sheet.set_row(1, 20)
-        sheet.write("A2", "Sl No.", cell_format)
-        sheet.write("B2", "Name", cell_format)
+        sheet.write("A2", "SN", cell_format)
+        sheet.write("B2", "Guest Name", cell_format)
         sheet.write("C2", "Room No", cell_format)
-        sheet.write("D2", "Status", cell_format)
+        sheet.write("D2", "Board Type", cell_format)
+        sheet.write("E2", "Status", cell_format)
         row = 2
         column = 0
         value = 1
         for i in data["booking"]:
             sheet.write(row, column, value, body)
-            sheet.write(row, column + 1, i["name"], body)
+            sheet.write(row, column + 1, i["guest_name"], body)
             sheet.write(row, column + 2, i["room"], body)
-            sheet.write(row, column + 3, i["state"], body)
+            sheet.write(row, column + 3, i["board_type"], body)
+            sheet.write(row, column + 4, i["state"], body)
             row = row + 1
             value = value + 1
         workbook.close()

@@ -24,7 +24,7 @@ patch(ProductScreen.prototype, {
     async onClickAddRoom() {
         const bookings = await this.orm.searchRead("room.booking",
             [["state", "=", "check_in"]],
-            ["id", "name", "partner_id", "room_line_ids"]
+            ["id", "name", "partner_id", "room_line_ids", "board_type"]
         );
 
         if (bookings.length === 0) {
@@ -50,10 +50,18 @@ patch(ProductScreen.prototype, {
             }
         }
 
+        const boardLabels = {
+            'ro': 'Room Only (RO)',
+            'bb': 'Bed & Breakfast (BB)',
+            'hb': 'Half Board (HB)',
+            'fb': 'Full Board (FB)',
+        };
+
         for (const b of bookings) {
             const roomNames = roomLineMap[b.id] ? roomLineMap[b.id].join(", ") : "";
             b.display_name = roomNames || b.name;
             b.room_numbers = roomNames || b.name;
+            b.board_type_display = boardLabels[b.board_type] || b.board_type || "Room Only (RO)";
         }
 
         const selectedBooking = await makeAwaitable(this.dialog, HotelRoomPopup, {

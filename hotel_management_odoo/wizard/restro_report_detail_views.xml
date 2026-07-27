@@ -6,6 +6,9 @@
         <field name="model">restro.report.detail</field>
         <field name="arch" type="xml">
             <form name="report">
+                <p class="oe_grey">
+                    This report generates the list of <b>In-House Checked-In Guests</b> only, showing their Room Number and Board Type (BB, HB, FB, RO) for restaurant and kitchen operations.
+                </p>
                 <group col="4">
                     <field name="checkin"/>
                     <field name="checkout"/>
@@ -32,7 +35,7 @@
     </record>
     <!--    Restro Report Menu Action-->
     <record id="restro_report_detail_action" model="ir.actions.act_window">
-        <field name="name">Restro Report</field>
+        <field name="name">In-House Guest Restro Report</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">restro.report.detail</field>
         <field name="view_mode">form</field>
