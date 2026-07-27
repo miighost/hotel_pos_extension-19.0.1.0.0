@@ -129,6 +129,22 @@ class RoomBooking(models.Model):
                                                " to Customer and"
                                                " it will included in the "
                                                "main invoice.", )
+    board_type = fields.Selection([
+        ('ro', 'Room Only (RO)'),
+        ('bb', 'Bed & Breakfast (BB)'),
+        ('hb', 'Half Board (HB)'),
+        ('fb', 'Full Board (FB)'),
+    ], string='Board Type', default='ro', help="Select the meal plan / board type for this booking.")
+    room_number = fields.Char(string="Room No.", compute="_compute_room_number", store=True)
+
+    @api.depends('room_line_ids.room_id')
+    def _compute_room_number(self):
+        for record in self:
+            if record.room_line_ids:
+                record.room_number = ", ".join(record.room_line_ids.mapped('room_id.name'))
+            else:
+                record.room_number = ""
+
     state = fields.Selection(selection=[('draft', 'Draft'),
                                         ('reserved', 'Reserved'),
                                         ('check_in', 'Check In'),
@@ -401,6 +417,22 @@ class RoomBooking(models.Model):
             if self.event_line_ids:
                 for event in self.event_line_ids:
                     event.unlink()
+
+    @api.onchange('checkin_date', 'checkout_date')
+    def _onchange_checkin_checkout_dates(self):
+        """Update duration and sync dates to room lines when checkin/checkout dates are changed."""
+        if self.checkout_date and self.checkin_date:
+            if self.checkout_date < self.checkin_date:
+                raise ValidationError(_("Checkout date must be greater or equal to checkin date."))
+            diffdate = self.checkout_date - self.checkin_date
+            qty = diffdate.days
+            if diffdate.total_seconds() > 0:
+                qty = qty + 1
+            self.duration = qty
+            for line in self.room_line_ids:
+                line.checkin_date = self.checkin_date
+                line.checkout_date = self.checkout_date
+                line.uom_qty = qty
 
     @api.onchange('food_order_line_ids', 'room_line_ids',
                   'service_line_ids', 'vehicle_line_ids', 'event_line_ids')

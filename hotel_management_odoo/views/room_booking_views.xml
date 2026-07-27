@@ -58,8 +58,6 @@
                         <field name="is_checkin" invisible="1"/>
                         <field name="company_id" invisible="1"/>
                         <field name="has_pos_orders" invisible="1"/>
-                        <field name="checkin_date" invisible="1"/>
-                        <field name="checkout_date" invisible="1"/>
                         <field name="duration" readonly="1" invisible="1"/>
                         <field name="duration_visible" invisible="1"/>
                         <field name="invoice_button_visible" invisible="1"/>
@@ -76,7 +74,10 @@
                         </group>
                         <group>
                             <field name="date_order"/>
+                            <field name="checkin_date" string="Check In"/>
+                            <field name="checkout_date" string="Check Out"/>
                             <field name="pricelist_id"/>
+                            <field name="board_type"/>
                             <field name="need_service"
                                    invisible=" state not in ['check_in']"/>
                             <field name="need_fleet"
@@ -316,8 +317,10 @@
         <field name="model">room.booking</field>
         <field name="arch" type="xml">
             <list>
-                <field name="name"/>
+                <field name="name" string="Folio Number"/>
+                <field name="room_number" string="Room No."/>
                 <field name="partner_id"/>
+                <field name="board_type"/>
                 <field name="date_order"/>
                 <field name="state"/>
             </list>
