@@ -3,11 +3,11 @@
     <!--    Restro report action-->
     <record id="action_report_restro_report" model="ir.actions.report">
         <field name="name">Restro Report</field>
-        <field name="model">restro.report.detail</field>
+        <field name="model">food.booking.line</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">hotel_management_odoo.report_restro_report</field>
         <field name="report_file">hotel_management_odoo.report_restro_report</field>
-        <field name="binding_model_id" ref="model_restro_report_detail"/>
+        <field name="binding_model_id" ref="model_food_booking_line"/>
         <field name="binding_type">report</field>
     </record>
     <!--    Restro report template-->
