@@ -1,8 +1,8 @@
 <?xml version = "1.0" encoding = "UTF-8" ?>
 <odoo>
-    <!--    Restro report action-->
+    <!--    In-House Guest report action-->
     <record id="action_report_restro_report" model="ir.actions.report">
-        <field name="name">In-House Guest Restro Report</field>
+        <field name="name">In-House Guest Report</field>
         <field name="model">room.booking</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">hotel_management_odoo.report_restro_report</field>
@@ -10,18 +10,19 @@
         <field name="binding_model_id" ref="model_room_booking"/>
         <field name="binding_type">report</field>
     </record>
-    <!--    Restro report template-->
+    <!--    In-House Guest report template-->
     <template id="report_restro_report">
         <t t-call="web.html_container">
             <t t-call="web.external_layout">
                 <div class="page">
-                    <h2 class="text-center" style="font-weight: bold; margin-bottom: 20px;">In-House Guest Restro Report</h2>
+                    <h2 class="text-center" style="font-weight: bold; margin-bottom: 20px;">In-House Guest Report</h2>
                     <br/>
                     <table class="table table-bordered table-sm">
                         <thead>
                             <tr style="background-color: #f2f2f2; text-align: center;">
                                 <th>SN</th>
                                 <th>Guest Name</th>
+                                <th>Company</th>
                                 <th>Room No</th>
                                 <th>Board Type</th>
                                 <th>Status</th>
@@ -37,6 +38,9 @@
                                     </td>
                                     <td>
                                         <t t-esc="line['guest_name']"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="line['company_name']"/>
                                     </td>
                                     <td class="text-center">
                                         <t t-esc="line['room']"/>

@@ -17,9 +17,9 @@
               action="sale_order_detail_action"
               parent="hotel_reporting_menu"
               sequence="20"/>
-    <!--    Restro Report Menu-->
+    <!--    In-House Guest Report Menu-->
     <menuitem id="restro_report_detail_menu"
-              name="Restro Rep"
+              name="In-House Guest"
               action="restro_report_detail_action"
               parent="hotel_reporting_menu"
               sequence="30"/>

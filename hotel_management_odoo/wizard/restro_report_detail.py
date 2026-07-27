@@ -101,11 +101,23 @@ class RestroReportWizard(models.TransientModel):
         inhouse_bookings = self.env["room.booking"].search(domain)
         for booking in inhouse_bookings:
             room_names = ", ".join(booking.room_line_ids.mapped("room_id.name")) if booking.room_line_ids else ""
-            guest_name = booking.partner_id.name if booking.partner_id else ""
+            partner = booking.partner_id
+            guest_name = partner.name if partner else ""
+            
+            # Retrieve company name from guest partner
+            company_name = "None"
+            if partner:
+                comp = partner.parent_id.name or partner.company_name
+                if not comp and partner.commercial_company_name and partner.commercial_company_name != partner.name:
+                    comp = partner.commercial_company_name
+                if comp:
+                    company_name = comp
+
             raw_board = booking.board_type if hasattr(booking, 'board_type') else 'ro'
             board_type_val = board_labels.get(raw_board, raw_board or "Room Only (RO)")
             restro_list.append({
                 "guest_name": guest_name,
+                "company_name": company_name,
                 "room": room_names or booking.name,
                 "board_type": board_type_val,
                 "state": state_labels.get(booking.state, booking.state or "Check In"),
@@ -138,24 +150,26 @@ class RestroReportWizard(models.TransientModel):
         )
         body = workbook.add_format(
             {"align": "left", "text_wrap": True, "border": True})
-        sheet.merge_range("A1:E1", "In-House Guest Restro Report", head)
-        sheet.set_column("A2:E2", 22)
+        sheet.merge_range("A1:F1", "In-House Guest Report", head)
+        sheet.set_column("A2:F2", 22)
         sheet.set_row(0, 30)
         sheet.set_row(1, 20)
         sheet.write("A2", "SN", cell_format)
         sheet.write("B2", "Guest Name", cell_format)
-        sheet.write("C2", "Room No", cell_format)
-        sheet.write("D2", "Board Type", cell_format)
-        sheet.write("E2", "Status", cell_format)
+        sheet.write("C2", "Company", cell_format)
+        sheet.write("D2", "Room No", cell_format)
+        sheet.write("E2", "Board Type", cell_format)
+        sheet.write("F2", "Status", cell_format)
         row = 2
         column = 0
         value = 1
         for i in data["booking"]:
             sheet.write(row, column, value, body)
             sheet.write(row, column + 1, i["guest_name"], body)
-            sheet.write(row, column + 2, i["room"], body)
-            sheet.write(row, column + 3, i["board_type"], body)
-            sheet.write(row, column + 4, i["state"], body)
+            sheet.write(row, column + 2, i["company_name"], body)
+            sheet.write(row, column + 3, i["room"], body)
+            sheet.write(row, column + 4, i["board_type"], body)
+            sheet.write(row, column + 5, i["state"], body)
             row = row + 1
             value = value + 1
         workbook.close()

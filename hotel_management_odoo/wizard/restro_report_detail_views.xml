@@ -1,21 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
-    <!--    Restro Report Detail form view-->
+    <!--    In-House Guest Report Detail form view-->
     <record id="restro_report_detail_view_form" model="ir.ui.view">
         <field name="name">restro.report.detail.view.form</field>
         <field name="model">restro.report.detail</field>
         <field name="arch" type="xml">
             <form name="report">
-                <p class="oe_grey">
-                    This report generates the list of <b>In-House Checked-In Guests</b> only, showing their Room Number and Board Type (BB, HB, FB, RO) for restaurant and kitchen operations.
-                </p>
-                <group col="4">
-                    <field name="checkin"/>
-                    <field name="checkout"/>
-                    <field name="room_id" domain="[('is_room','=',True)]"
-                           options="{'no_create': True, 'no_quick_create': True,
-                           'no_create_edit':True}"/>
-                </group>
+                <div class="alert alert-info" role="alert">
+                    Generates a report of all currently <b>In-House Checked-In Guests</b> along with their <b>Room Number</b> and <b>Board Type</b> (BB, HB, FB, RO).
+                </div>
                 <footer>
                     <button name="action_restro_report_pdf" type="object"
                             class="btn-primary">
@@ -33,9 +26,9 @@
             </form>
         </field>
     </record>
-    <!--    Restro Report Menu Action-->
+    <!--    In-House Guest Report Menu Action-->
     <record id="restro_report_detail_action" model="ir.actions.act_window">
-        <field name="name">In-House Guest Restro Report</field>
+        <field name="name">In-House Guest Report</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">restro.report.detail</field>
         <field name="view_mode">form</field>
