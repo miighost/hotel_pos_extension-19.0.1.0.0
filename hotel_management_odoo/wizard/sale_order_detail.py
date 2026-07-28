@@ -22,7 +22,7 @@
 import io
 import json
 from datetime import datetime, timedelta
-from odoo import fields, models
+from odoo import _, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools import json_default
 
@@ -76,8 +76,8 @@ class SaleOrderWizard(models.TransientModel):
         domain = []
         if self.checkin and self.checkout:
             if self.checkin > self.checkout:
-                raise ValidationError((
-                    'Check-in date should be less than Check-out date'))
+                raise ValidationError(
+                    _('Check-in date should be less than Check-out date'))
         if self.checkin:
             domain.append(('checkin_date', '>=', self.checkin), )
         if self.checkout:
@@ -101,7 +101,7 @@ class SaleOrderWizard(models.TransientModel):
                                                                 'checkout_date',
                                                                 'amount_total'])
         for rec in room_booking:
-            rec['partner_id'] = rec['partner_id'][1]
+            rec['partner_id'] = rec['partner_id'][1] if rec['partner_id'] else ''
         return room_booking
 
     def _format_datetime(self, value):
