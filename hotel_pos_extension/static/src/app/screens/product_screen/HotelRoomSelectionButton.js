@@ -72,10 +72,26 @@ patch(ProductScreen.prototype, {
         if (selectedBooking) {
             const order = this.pos.getOrder();
             order?.setBooking(selectedBooking);
-            if (selectedBooking.partner_id) {
-                const partner = this.pos.models["res.partner"].get(selectedBooking.partner_id[0]);
-                if (partner) {
-                    order.setPartner(partner);
+            if (selectedBooking.partner_id && selectedBooking.partner_id[0]) {
+                const partnerId = selectedBooking.partner_id[0];
+                let partner = this.pos.models["res.partner"]?.getBy?.("id", partnerId) ||
+                              this.pos.models["res.partner"]?.get?.(partnerId);
+                if (!partner) {
+                    try {
+                        const [pData] = await this.orm.read("res.partner", [partnerId], []);
+                        if (pData) {
+                            partner = this.pos.models["res.partner"].insert(pData);
+                        }
+                    } catch (e) {
+                        console.warn("Could not load partner for room booking", e);
+                    }
+                }
+                if (partner && order) {
+                    if (typeof order.setPartner === 'function') {
+                        order.setPartner(partner);
+                    } else if (typeof order.set_partner === 'function') {
+                        order.set_partner(partner);
+                    }
                 }
             }
         }
