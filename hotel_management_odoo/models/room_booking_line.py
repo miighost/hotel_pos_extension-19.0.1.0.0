@@ -98,7 +98,7 @@ class RoomBookingLine(models.Model):
         """Compute the rent using the booking's pricelist, falling back to
         the room's list price when there is no pricelist."""
         for line in self:
-            if not line.room_id:
+            if not line.room_id or not line.room_id.exists():
                 line.price_unit = 0
                 continue
             pricelist = line.booking_id.pricelist_id

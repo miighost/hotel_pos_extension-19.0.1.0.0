@@ -100,7 +100,8 @@ class RestroReportWizard(models.TransientModel):
         restro_list = []
         inhouse_bookings = self.env["room.booking"].search(domain)
         for booking in inhouse_bookings:
-            room_names = ", ".join(booking.room_line_ids.mapped("room_id.name")) if booking.room_line_ids else ""
+            valid_rooms = booking.room_line_ids.filtered(lambda l: l.room_id and l.room_id.exists())
+            room_names = ", ".join(valid_rooms.mapped("room_id.name")) if valid_rooms else ""
             partner = booking.partner_id
             guest_name = partner.name if partner else ""
             

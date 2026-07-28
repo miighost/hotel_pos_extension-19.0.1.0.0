@@ -140,10 +140,8 @@ class RoomBooking(models.Model):
     @api.depends('room_line_ids.room_id')
     def _compute_room_number(self):
         for record in self:
-            if record.room_line_ids:
-                record.room_number = ", ".join(record.room_line_ids.mapped('room_id.name'))
-            else:
-                record.room_number = ""
+            valid_rooms = record.room_line_ids.filtered(lambda l: l.room_id and l.room_id.exists()).mapped('room_id.name')
+            record.room_number = ", ".join(valid_rooms) if valid_rooms else ""
 
     state = fields.Selection(selection=[('draft', 'Draft'),
                                         ('reserved', 'Reserved'),
@@ -326,7 +324,7 @@ class RoomBooking(models.Model):
             record.amount_untaxed_room = sum(record.room_line_ids.mapped('price_subtotal'))
             record.amount_taxed_room = sum(record.room_line_ids.mapped('price_tax'))
             record.amount_total_room = sum(record.room_line_ids.mapped('price_total'))
-            for room in record.room_line_ids:
+            for room in record.room_line_ids.filtered(lambda l: l.room_id and l.room_id.exists()):
                 delta = get_delta(room.room_id.name, room.uom_qty, room.price_unit, 'room')
                 if delta > 0:
                     booking_list.append({'name': room.room_id.name, 'quantity': delta, 'price_unit': room.price_unit,
@@ -508,7 +506,7 @@ class RoomBooking(models.Model):
                     }
                 }
             if record.room_line_ids:
-                for room in record.room_line_ids:
+                for room in record.room_line_ids.filtered(lambda l: l.room_id and l.room_id.exists()):
                     room.room_id.write({
                         'status': 'reserved',
                     })
@@ -532,7 +530,7 @@ class RoomBooking(models.Model):
         """
         for record in self:
             if record.room_line_ids:
-                for room in record.room_line_ids:
+                for room in record.room_line_ids.filtered(lambda l: l.room_id and l.room_id.exists()):
                     room.room_id.write({
                         'status': 'available',
                     })
@@ -543,18 +541,15 @@ class RoomBooking(models.Model):
         """
         Function that handles the maintenance request
         """
-        room_list = []
-        for rec in self.room_line_ids.room_id.ids:
-            room_list.append(rec)
-        if room_list:
-            room_id = self.env['product.template'].search([
-                ('id', 'in', room_list)])
+        valid_lines = self.room_line_ids.filtered(lambda l: l.room_id and l.room_id.exists())
+        if valid_lines:
+            room_id = valid_lines.mapped('room_id')
             self.env['maintenance.request'].sudo().create({
                 'name': 'Maintenance Request - %s' % self.name,
                 'date': fields.Date.today(),
                 'state': 'draft',
                 'type': 'room',
-                'room_maintenance_ids': room_id.ids,
+                'room_maintenance_ids': [(6, 0, room_id.ids)],
                 'is_hotel': True,
             })
             self.maintenance_request_sent = True
@@ -593,7 +588,7 @@ class RoomBooking(models.Model):
         """Button action_heck_out function"""
         for record in self:
             record.write({"state": "check_out"})
-            for room in record.room_line_ids:
+            for room in record.room_line_ids.filtered(lambda l: l.room_id and l.room_id.exists()):
                 room.room_id.write({
                     'status': 'available',
                     'is_room_avail': True
@@ -658,7 +653,7 @@ class RoomBooking(models.Model):
             if not record.room_line_ids:
                 raise ValidationError(("Please Enter Room Details"))
             else:
-                for room in record.room_line_ids:
+                for room in record.room_line_ids.filtered(lambda l: l.room_id and l.room_id.exists()):
                     room.room_id.write({
                         'status': 'occupied',
                     })

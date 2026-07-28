@@ -100,13 +100,17 @@ class RoomBookingWizard(models.TransientModel):
         }
         room_booking_lines = self.env["room.booking.line"].search(domain)
         for line in room_booking_lines:
+            room_name = line.room_id.name if line.room_id and line.room_id.exists() else ""
+            partner_name = line.booking_id.partner_id.name if line.booking_id and line.booking_id.partner_id else ""
+            booking_name = line.booking_id.name if line.booking_id else ""
+            raw_state = line.booking_id.state if line.booking_id else ""
             room_list.append({
-                "partner_id": line.booking_id.partner_id.name,
-                "name": line.booking_id.name,
+                "partner_id": partner_name,
+                "name": booking_name,
                 "checkin_date": line.checkin_date,
                 "checkout_date": line.checkout_date,
-                "room": line.room_id.name,
-                "state": state_labels.get(line.booking_id.state, line.booking_id.state),
+                "room": room_name,
+                "state": state_labels.get(raw_state, raw_state),
             })
         return room_list
 
